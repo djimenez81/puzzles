@@ -1,5 +1,5 @@
-function sudoku = sudokuSolver(theGrid,theScopes)
-% This function solves, or attemtps to solve a generalized sudoku grid, given
+function sudoku = initializeSudoku(theGrid,theScopes)
+% This function initializes the structure of a generalized sudoku grid, given
 % the original grid of clues, and the corresponding scopes. A generalized sudoku
 % grid is one not limited to a 9x9 structure (but nxn in general) and not
 % limited to the common standard scopes.
@@ -38,41 +38,30 @@ function sudoku = sudokuSolver(theGrid,theScopes)
 %        false and k has not been eliminated as a possible value for the cell
 %        (i,j).
 %
-% SO FAR:
-%
-% TO DO:
-%   - Some validation of the data.
-%
   [N,M] = size(theScopes);
-  sudoku.clues    = theGrid;
-  sudoku.scopes   = theScopes;
-  sudoku.grid     = nan(N);
-  sudoku.filled   = false(N);
-  sudoku.possible = false(N,N,N);
-  sudoku.fillscop = false(N,M);
-  sudoku.viable   = true;
-  sudoku = initScopeCell(sudoku);
-  sudoku = initializeSudoku(sudoku);
-end
+  sudoku.clues     = theGrid;
+  sudoku.scopes    = theScopes;
+  sudoku.grid      = nan(N);
+  sudoku.filled    = false(N);
+  sudoku.possible  = false(N,N,N);
+  sudoku.fillscop  = false(N,M);
+  sudoku.viable    = true;
+  sudoku.clueIdx   = find(~isnan(sudoku.clues));
+  sudoku.scopecell = false(N^2,M);
 
+  for i=1:N^2
+      for j=1:M
+  	    if ~isempty(find(sudoku.scopes(:,j)==i))
+  		    sudoku.scopecell(i,j)=true;
+  		end
+  	end
+  end
 
-function sudoku = initializeSudoku(sudoku)
-% This function initialize the sudoku from the information that is given.
-%
-% INPUT:
-%   - sudoku: The struct
-%
-% OUTPUT:
-%   - sudoku: The struct initialized.
-%
-  [N,M]   = size(sudoku.scopes);
-  initIdx = find(~isnan(sudoku.clues));
-  sudoku.trash = initIdx;
-  K = length(initIdx);
+  K = length(sudoku.clueIdx);
   k = 1;
   initFlag = true;
   while initFlag
-    idx = initIdx(k);
+    idx = sudoku.clueIdx(k);
     val = sudoku.clues(idx);
     sudoku = insertValue(sudoku,idx,val);
     k = k + 1;
@@ -82,27 +71,4 @@ function sudoku = initializeSudoku(sudoku)
       initFlag = false;
     end
   end
-end
-
-
-function sudoku = initScopeCell(sudoku)
-% This function creates a field in the structure to identify to which scopes is
-% a cell a member of.
-%
-% INPUT:
-%   - sudoku: The struct
-%
-% OUTPUT:
-%   - sudoku: The struct initialized.
-%
-  [N,M] = size(sudoku.scopes);
-  scopeCell = false(N^2,M);
-  for i=1:N^2
-      for j=1:M
-  	    if ~isempty(find(sudoku.scopes(:,j)==i))
-  		    scopeCell(i,j)=true;
-  		end
-  	end
-  end
-  sudoku.scopecell = scopeCell;
 end
