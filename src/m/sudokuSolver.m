@@ -25,8 +25,8 @@ function sudoku = sudokuSolver(theGrid,theScopes)
 %
 % STRUCTURE FIELDS:
 %  - sudoku.grid: The grid under which the algorithm works.
-%  - sudoku.theClues: The original set of clues of the sudoku.
-%  - sudoku.theScopes: The set of scopes.
+%  - sudoku.clues: The original set of clues of the sudoku.
+%  - sudoku.scopes: The set of scopes.
 %  - sudoku.scopeCell: Boolean matrix N^2xM, where N is the side of the grid
 %        and M is the number of scopes. The column sC(:,n) is true on the
 %        entries that correspond to the cells in the scope n, and the row
@@ -43,12 +43,14 @@ function sudoku = sudokuSolver(theGrid,theScopes)
 % TO DO:
 %   - Some validation of the data.
 %
-  [N,~] = size(theGrid);
+  [N,M] = size(theScopes);
   sudoku.clues    = theGrid;
   sudoku.scopes   = theScopes;
   sudoku.grid     = nan(N);
   sudoku.filled   = false(N);
   sudoku.possible = false(N,N,N);
+  sudoku.fillscop = false(N,M);
+  sudoku.viable   = true;
   sudoku = initScopeCell(sudoku);
 end
 
@@ -61,7 +63,8 @@ function sudoku = initializeSudoku(sudoku)
 % OUTPUT:
 %   - sudoku: The struct initialized.
 %
-  [N,M] = size(sudoku.theScopes);
+  [N,M] = size(sudoku.scopes);
+  sudoku.trash = find(~isnan(sudoku.clues));
 
 end
 
