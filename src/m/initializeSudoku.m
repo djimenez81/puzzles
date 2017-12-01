@@ -39,14 +39,15 @@ function sudoku = initializeSudoku(theGrid,theScopes)
 %        (i,j).
 %
   [N,M] = size(theScopes);
-  sudoku.clues     = theGrid;
-  sudoku.scopes    = theScopes;
-  sudoku.grid      = nan(N);
-  sudoku.filled    = false(N);
-  sudoku.possible  = false(N,N,N);
-  sudoku.fillscop  = false(N,M);
-  sudoku.viable    = true;
-  sudoku.clueIdx   = find(~isnan(sudoku.clues));
+  sudoku.size = N;
+  sudoku.clues = theGrid;
+  sudoku.scopes = theScopes;
+  sudoku.grid = nan(N);
+  sudoku.filled = false(N);
+  sudoku.possible = true(N,N,N);
+  sudoku.fillscop = false(N,M);
+  sudoku.viable = true;
+  sudoku.clueIdx = find(~isnan(sudoku.clues));
   sudoku.scopecell = false(N^2,M);
 
   for i=1:N^2
