@@ -24,36 +24,53 @@ function sudoku = initializeSudoku(theGrid,theScopes)
 %            that need to be filled with exactly one of each of the digits.
 %
 % STRUCTURE FIELDS:
-%  - sudoku.grid: The grid under which the algorithm works.
-%  - sudoku.clues: The original set of clues of the sudoku.
-%  - sudoku.scopes: The set of scopes.
-%  - sudoku.scopeCell: Boolean matrix N^2xM, where N is the side of the grid
-%        and M is the number of scopes. The column sC(:,n) is true on the
-%        entries that correspond to the cells in the scope n, and the row
-%        sC(k,:) contains the information of the scopes of which the cell
-%        [i,j] = ind2sub([N,N],k) is part.
-%  - sudoku.theFilled: A boolean NxN matrix, with a true if the corresponding
-%        cell in theGrid has already been filled.
-%  - sudoku.thePosib: an NxNxN boolean array. tP(i,j,k) = true if tF(i,j) is
-%        false and k has not been eliminated as a possible value for the cell
-%        (i,j).
-%
+%  - sudoku.size:      Number representing the size (N) of the side of the grid.
+%  - sudoku.viable:    Boolean, false if the grid is determined to be unviable
+%  - sudoku.allowed:   Boolean, false if the proposed movement is allowed.
+%  - sudoku.grid:      An NxN matrix repersenting the grid. Cells containing a
+%                      NaN correspond to still empty cells.
+%  - sudoku.clues:     An NxN matrix repersenting the grid of original clues.
+%                      Cells containing a NaN  correspond to clues not given.
+%  - sudoku.scopes:    An NxM matrix where each column represents one of the
+%                      scopes to be observed by the grid. A grid contains the
+%                      cell [i,j] if the corresponding column contains the
+%                      number Nx(j-1)+i.
+%  - sudoku.filled:    An NxN boolean matrix, where the [i,j] cell is true if
+%                      the corresponding cell on the grid has already been
+%                      filled.
+%  - sudoku.possible:  An NxNxN boolean matrix, where the cell [i,j,k] is true
+%                      if the cell [i,j] in the grid has not yet been confirmed
+%                      as different from the value k.
+%  - sudoku.fillscope: An NxM boolean matrix where the [k,m] cell is true if the
+%                      value k has already been included in the scope m.
+%  - sudoku.scopeCell: Boolean matrix N^2xM, the cell [i,k] is true if the cell
+%                      corresponding to the i-th index (sub2ind style) is in the
+%                      k-th scope.
+%  - sudoku.clueIdx:   Array of numberscontaining the list of the indices of the
+%                      original clues.
+%  - sudoku.count:     Array Nx1 of numbers, where the k-th entrance represents
+%                      the number of times the value k is on the grid currently.
+
+
+
   [N,M] = size(theScopes);
   sudoku.size = N;
+  sudoku.viable = true;
+  sudoku.allowed = true;
+  sudoku.grid = nan(N);
   sudoku.clues = theGrid;
   sudoku.scopes = theScopes;
-  sudoku.grid = nan(N);
   sudoku.filled = false(N);
   sudoku.possible = true(N,N,N);
   sudoku.fillscop = false(N,M);
-  sudoku.viable = true;
-  sudoku.clueIdx = find(~isnan(sudoku.clues));
   sudoku.scopecell = false(N^2,M);
+  sudoku.clueIdx = find(~isnan(sudoku.clues));
+  sudoku.count = zeros(N,1);
 
   for i=1:N^2
-      for j=1:M
-  	    if ~isempty(find(sudoku.scopes(:,j)==i))
-  		    sudoku.scopecell(i,j)=true;
+    for j=1:M
+  	  if ~isempty(find(sudoku.scopes(:,j)==i))
+  		  sudoku.scopecell(i,j)=true;
   		end
   	end
   end

@@ -27,10 +27,13 @@ function sudoku = insertValue(sudoku,idx,val)
     sudoku.viable = false;
   elseif any(valscp)
     sudoku.viable = false;
+  elseif sudoku.count(val) >= N
+    sudoku.viable = false;
   else
     sudoku.filled(idx) = true;
     sudoku.possible(X,Y,:) = false;
     sudoku.possible(X,Y,val) = true;
+    sudoku.count(val) = sudoku.count(val) + 1;
     for k = 1:K
       scp = currScopes(k);
       sudoku.fillscop(val,scp) = true;
@@ -38,7 +41,7 @@ function sudoku = insertValue(sudoku,idx,val)
       thiscope = thiscope(thiscope ~= idx);
       R = length(thiscope);
       for r = 1:R
-        [x,y] = ind2sub([9,9], thiscope(r))
+        [x,y] = ind2sub([9,9], thiscope(r));
         sudoku.possible(x,y,val) = false;
       end
     end
