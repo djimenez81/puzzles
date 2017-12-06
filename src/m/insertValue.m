@@ -22,13 +22,13 @@ function sudoku = insertValue(sudoku,idx,val)
   end
 
   if sudoku.filled(idx)
-    sudoku.viable = false;
+    sudoku.allowed = false;
   elseif ~sudoku.possible(X,Y,val)
-    sudoku.viable = false;
+    sudoku.allowed = false;
   elseif any(valscp)
-    sudoku.viable = false;
+    sudoku.allowed = false;
   elseif sudoku.count(val) >= N
-    sudoku.viable = false;
+    sudoku.allowed = false;
   else
     sudoku.filled(idx) = true;
     sudoku.possible(X,Y,:) = false;
@@ -46,5 +46,6 @@ function sudoku = insertValue(sudoku,idx,val)
       end
     end
     sudoku.grid(idx) = val;
+    sudoku.allowed = true;
   end
 end
