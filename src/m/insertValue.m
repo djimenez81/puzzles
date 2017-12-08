@@ -11,7 +11,7 @@ function sudoku = insertValue(sudoku,idx,val)
 %   - sudoku: The structure with the sudoku grid once the value has been added.
 %
   N = sudoku.size;
-  [X,Y] = ind2sub([9,9],idx);
+  [X,Y] = ind2sub([N,N],idx);
   currScopes = find(sudoku.scopecell(idx,:));
   K = length(currScopes);
   valscp = false(K,1);
@@ -41,11 +41,18 @@ function sudoku = insertValue(sudoku,idx,val)
       thiscope = thiscope(thiscope ~= idx);
       R = length(thiscope);
       for r = 1:R
-        [x,y] = ind2sub([9,9], thiscope(r));
+        [x,y] = ind2sub([N,N], thiscope(r));
         sudoku.possible(x,y,val) = false;
       end
     end
+    indices  = find(isnan(sudoku.grid));
+    R = length(indices);
+    [X,Y] = ind2sub([N,N], indices);
+    B = false(R,1);
+    for r = 1:R
+      B(r) = any(sudoku.possible(X(r),Y(r),:));
+    end
     sudoku.grid(idx) = val;
-    sudoku.allowed = true;
+    sudoku.allowed = all(B);
   end
 end

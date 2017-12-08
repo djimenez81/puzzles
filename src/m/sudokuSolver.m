@@ -28,8 +28,7 @@ function sudoku = backtracking(sudoku)
   k = 1;
   keepGoing = true;
   gridSize = [sudoku.size, sudoku.size];
-
-  emptycells = find(~isnan(sudoku.clues));
+  emptycells = find(isnan(sudoku.clues));
 
   if isempty(emptycells)
     % The grid was already full.
@@ -48,13 +47,15 @@ function sudoku = backtracking(sudoku)
     idx = dasu{k}.emptycells(1);
     val = dasu{k}.choices(1);
     sudo = insertValue(dasu{k}.sudoku, idx, val);
-    emptycells = dasu{1}.emptycells;
+    emptycells = dasu{k}.emptycells;
     if sudo.allowed
       k = k + 1;
       emptycells(1) = [];
       if isempty(emptycells)
         % The grid is already full
         keepGoing = false;
+        sudoku = sudo;
+        sudoku.backtrackingscore = n;
       else
         idx = emptycells(1);
         [x,y] = ind2sub(gridSize,idx);
@@ -85,9 +86,4 @@ function sudoku = backtracking(sudoku)
       end
     end
   end
-  % What should we return.
-  if sudoku.viable
-    sudoku = dasu{end}.sudoku;
-  end
-  disp(n);
 end
