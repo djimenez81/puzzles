@@ -158,4 +158,5 @@ function [sudoku,score] = fillSingleOption(sudoku)
       end
     end
   end
+  printf(score);
 end
