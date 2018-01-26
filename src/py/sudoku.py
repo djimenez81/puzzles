@@ -105,7 +105,7 @@ def _verifyClues(clues,size):
 ##                          ##
 ##############################
 ##############################
-# class SudokuClass:
+class SudokuClass:
     # Description.
 
     ##############
@@ -130,6 +130,7 @@ def _verifyClues(clues,size):
     ###########
     # METHODS #
     ###########
+    pass
 
 ##############################
 ##############################
