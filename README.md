@@ -1,13 +1,11 @@
-# SUDOKU
+# PUZZLES
 
-Copyright (c) 2017 David Jimenez.
+Copyright (c) 2018 David Jimenez.
 
 ## WHAT IS THIS PROJECT
 
-I like to play SUDOKU, as well as other logic games like that. I would like to 
-play around and experiment with some algorithms, maybe implement my own solver,
-etc. So, we will see how this goes. If you find anything here useful, let me 
-know:
+I like to practice programming of different games. Here I am trying to implement
+some of those games. There is no graphic interfase, it is more about the logic.
 
 david[dot]jimenezlopez[at]ucr[dot]ac[dot]cr
 
