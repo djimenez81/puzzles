@@ -1,2 +1,3 @@
 /src/m/octave-workspace
 script.*
+*.pyc
