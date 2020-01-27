@@ -132,6 +132,34 @@ def listRows(n):
     return row_list
 
 
+
+# Some crap
+def gcd(a,b):
+    while b:
+        a, b = b, a % b
+    return a
+
+def binom(n,k):
+    num = den = 1
+    if k < 0 or k > n:
+        return 0
+    else:
+        if 2*k < n:
+            k = n-k
+        for j in range(1,n-k+1):
+            num *= k + j
+            den *= j
+            div = gcd(num,den)
+            num //= div
+            den //= div
+        return num
+
+def hanna(n):
+    val = 0
+    for k in range(n+1):
+        val += (binom(k,n-k)+binom(k+1,n-k-1))**2
+    return val//2
+
 ###################
 ###################
 ###################
