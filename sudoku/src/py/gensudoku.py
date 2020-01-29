@@ -58,6 +58,9 @@
 ################################
 ################################
 # 1. The empty cell is a 0.
+# 2. The numeration of rows and columns starts in 1, not in 0, so, this has to
+#    be checked carefully when implementing functions and methods that access
+#    the grid directly.
 
 
 ###################
@@ -129,6 +132,17 @@ def latinSquarePartitions(N):
 
 
 def regularSudokuPartitions(N):
+    # This function returns the partition corresponding to the regular sudoku.
+    # This means, the partitions are, first, the rows, second, the columns, and
+    # third, the boxes.
+    #
+    # INPUT:
+    #   - N: unsigned square integer up to 225 (uint8)
+    #
+    # OUTPUT:
+    #   - partitions: A list of three NumPy array of uint8 elements, NxN, with
+    #                 the respective partitions.
+    #
     # First check if the number given is a perfect square.
     K = math.sqrt(N)
     if not K.is_integer():
@@ -179,9 +193,6 @@ def regularSudokuPartitions(N):
 ###################
 ###################
 
-# implement a class for partition
-# implement class for "partition interval"
-# implement a class for grid
 
 ##############################
 ##############################
@@ -201,19 +212,15 @@ class GeneralSudokuGrid:
     _grid       = [] # Grid of values solved.
     _options    = [] # The options that are still possible.
     _partitions = [] # List of the partitions
-#    _filled     = [] # Grid of filled position
-#    _clues      = [] # List of original clues
-#    _symbols    = [] # List of symbols to write
 
 
     ############
     # CREATORS #
     ############
     def __init__(self,size):
-        self._size = size
-        self._grid = np.zeros([size, size], dtype = np.uint8)
+        self._size    = size
+        self._grid    = np.zeros([size, size], dtype = np.uint8)
         self._options = np.ones([size, size, size], dtype = np.bool)
-#        self._filled = [[False for i in range(size)] for j in range(size)]
 
 
     ###########
@@ -234,6 +241,57 @@ class GeneralSudokuGrid:
         else:
             self._partN = K
             self._partitions = np.asarray(partitions)
+
+
+    #############
+    # FUNCTIONS #
+    #############
+    def fillEntry(self,val,x,y):
+        # This function checks if the entry at the coordinates [x,y] have
+        # already been filled, and if they have not, and the value val is a
+        # valid option, then they filled, and marks the options respectively as
+        # marked, and returns True. If they have, then it just returns False.
+        #
+        # INPUT:
+        #  - val: The value that is going to be filled in.
+        #  - x:   The x coordinate of the entry to be filled.
+        #  - y:   The y coordinate of the entry to be filled.
+        #
+        # OUTPUT:
+        #  - FILLED: Returns True if the given entry was filled, False otherwise.
+        #
+
+        # First, remember to set the values that directly access the arrays to
+        # one less, because the numbering of the entries starts in 1, not in 0.
+        v = val - 1
+        x -= 1
+        y -= 1
+        if self._grid[x,y] == 0:
+            if self._options[v,x,y]:
+                # 1. Fill the value in the given entry.
+                self._grid[x,y] = val
+                self._options[:,x,y] = False
+                self._options[v,x,y] = True
+
+                # Fill all the other cells that now cannot be filled with val.
+                partMates = np.zeros([self._size,self._size], dtype = np.bool)
+                K = self._partitions.shape[0]
+                for k in range(K):
+                    partition = self._partitions[k,:,:]
+                    N = partition[x,y]
+                    partRegion = (partition == N)
+                    partMates = np.logical_or(partMates, partRegion)
+                partMates = np.logical_and(partMates, (self._grid == 0))
+                idxs = np.where(partMates)
+                self._options[v,idxs[0],idxs[1]] = False
+
+                return True
+            else:
+                return False
+        else:
+            return False
+
+
 
 
     ###########
