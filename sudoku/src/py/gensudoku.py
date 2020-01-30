@@ -58,9 +58,8 @@
 ################################
 ################################
 # 1. The empty cell is a 0.
-# 2. The numeration of rows and columns starts in 1, not in 0, so, this has to
-#    be checked carefully when implementing functions and methods that access
-#    the grid directly.
+# 2. The numeration of rows and columns starts in 0. This also means that the
+#    value has to be taken into consideration
 
 
 ###################
@@ -99,17 +98,13 @@ import math
 ################################
 ################################
 
-##############
-##############
-##          ##
-##  PUBLIC  ##
-##          ##
-##############
-##############
-
-#############
-# FUNCTIONS #
-#############
+#################
+#################
+##             ##
+##  FUNCTIONS  ##
+##             ##
+#################
+#################
 def latinSquarePartitions(N):
     # This function returns partitions corresponding to the regular Latin
     # Squares. This means, that the partitions are, first, the rows, and second,
@@ -163,23 +158,6 @@ def regularSudokuPartitions(N):
 
 
 
-###############
-###############
-##           ##
-##  PRIVATE  ##
-##           ##
-###############
-###############
-
-
-###############
-###############
-##           ##
-##  PRIVATE  ##
-##           ##
-###############
-###############
-
 
 ###################
 ###################
@@ -202,7 +180,16 @@ def regularSudokuPartitions(N):
 ##############################
 ##############################
 class GeneralSudokuGrid:
-    # Description.
+    # This class contains some basic structure and functionality for the
+    # implementation of a more general puzzle based on Sudoku. In this case, it
+    # is based on an NxN grid, that is separated in k partitions of N parts each
+    # where each part has N cells. This is, for example, one of the partitions
+    # can be consider, in the regular sudoku, as the rows, another as the
+    # columns, and the last as the boxes. But in this case, it is not necessary
+    # to have only three. One is too few, but beyond that, anything is allowed.
+    #
+    # One of the thins we could consider is partitions with less than N parts.
+    #
 
     ##############
     # ATTRIBUTES #
@@ -220,7 +207,7 @@ class GeneralSudokuGrid:
     def __init__(self,size):
         self._size    = size
         self._grid    = np.zeros([size, size], dtype = np.uint8)
-        self._options = np.ones([size, size, size], dtype = np.bool)
+        self._options = np.ones([size, size, size],  dtype = np.bool)
 
 
     ###########
@@ -234,7 +221,14 @@ class GeneralSudokuGrid:
     # SETTERS #
     ###########
     def setPartitions(self,partitions):
-        # There should some partition verifications system
+        # This method sets an array of NxN matrices as the templates for the
+        # partitions to be applied to the grid.
+        #
+        # INPUT:
+        #  - partitions: List of NxN matrices.
+        #
+
+        # There should be some partition verifications system
         K = len(partitions)
         if K == 0:
             print("\nERROR: Trying to set empty partitions\n")
@@ -243,10 +237,34 @@ class GeneralSudokuGrid:
             self._partitions = np.asarray(partitions)
 
 
+    def setGridFromArray(self,theArray):
+        # This method takes an NxN NumPy array and makes it the grid for the
+        # puzzle.
+        #
+        # INPUT:
+        #  - theArray: NxN NumPy Array with a valid puzzle.
+        #
+        # OUTPUT:
+        #  - SUCCESS: A boolean, True only if the setting was successful.
+        #
+        N = self._size
+        if theArray.ndim != 2:
+            return False
+        elif theArray.shape[0] == theArray.shape[1] == N:
+            flag = True
+            for x in range(N):
+                for y in range(N):
+                    val = theArray[x,y]
+                    if val > 0:
+                        flag &= self.fillEntry(val,x,y)
+        else:
+            return False
+
+
     #############
     # FUNCTIONS #
     #############
-    def fillEntry(self,val,x,y):
+    def fillEntry(self, val, x, y):
         # This function checks if the entry at the coordinates [x,y] have
         # already been filled, and if they have not, and the value val is a
         # valid option, then they filled, and marks the options respectively as
@@ -260,36 +278,77 @@ class GeneralSudokuGrid:
         # OUTPUT:
         #  - FILLED: Returns True if the given entry was filled, False otherwise.
         #
-
-        # First, remember to set the values that directly access the arrays to
-        # one less, because the numbering of the entries starts in 1, not in 0.
         v = val - 1
-        x -= 1
-        y -= 1
-        if self._grid[x,y] == 0:
-            if self._options[v,x,y]:
-                # 1. Fill the value in the given entry.
-                self._grid[x,y] = val
-                self._options[:,x,y] = False
-                self._options[v,x,y] = True
-
-                # Fill all the other cells that now cannot be filled with val.
-                partMates = np.zeros([self._size,self._size], dtype = np.bool)
-                K = self._partitions.shape[0]
-                for k in range(K):
-                    partition = self._partitions[k,:,:]
-                    N = partition[x,y]
-                    partRegion = (partition == N)
-                    partMates = np.logical_or(partMates, partRegion)
-                partMates = np.logical_and(partMates, (self._grid == 0))
-                idxs = np.where(partMates)
-                self._options[v,idxs[0],idxs[1]] = False
-
-                return True
-            else:
-                return False
+        if self._grid[x,y] == 0 and self._options[v,x,y]:
+            self._grid[x,y] = val
+            self._options[:,x,y] = False
+            self._options[v,x,y] = True
+            partMates = np.zeros([self._size,self._size], dtype = np.bool)
+            K = self._partitions.shape[0]
+            for k in range(K):
+                partition = self._partitions[k,:,:]
+                N = partition[x,y]
+                partRegion = (partition == N)
+                partMates = np.logical_or(partMates, partRegion)
+            partMates = np.logical_and(partMates, (self._grid == 0))
+            idxs = np.where(partMates)
+            self._options[v,idxs[0],idxs[1]] = False
+            return True
         else:
             return False
+
+
+    def isFilled(self):
+        # This function returns True if and only if all the cells in the grid
+        # have been filled.
+        #
+        # OUTPUT:
+        #  - FILLED: A boolean that is true only if all the cells in the grid
+        #            have been filled.
+        #
+        M = self._grid == 0
+        P = np.where(M)
+        return len(P[0]) == 0
+
+
+    def isViable(self):
+        # This function returns True if and only if all empty cells still have
+        # at least an option open. That is, if for every x and y valid, not yet
+        # filled, there is at least a value v such that _options[v,x,y] is set
+        # to True.
+        #
+        # OUTPUT:
+        #  - VIABLE: Boolean, true if and only if each unfilled cell has at
+        #            least one option open.
+        #
+        M = np.logical_and(np.sum(self._options, axis = 0) == 0, self._grid == 0)
+        M = np.where(M)
+        return len(M[0]) == 0
+
+
+    def fillCellsWithUniqueOptions(self):
+        # This function fills the cells that have not been filled yet, but have
+        # a single option available. Only those that already have a single
+        # option when the function starts, are considered. The function returns
+        # true if it filled at least one entrance. A false indicates that
+        # a further technique should be considered.
+        #
+        # OUTPUT:
+        #  - FILLING: True if at least one entry was filled.
+        #
+        M = np.logical_and(np.sum(self._options, axis = 0) == 1, self._grid == 0)
+        M = np.where(M)
+        K = len(M[0])
+        if K > 0:
+            for k in range(K):
+                x = M[0][k]
+                y = M[1][k]
+                v = np.where(self._options[:,x,y])[0][0]
+                self.fillEntry(v + 1, x, y)
+            return True
+        else:
+            return False
+
 
 
 
