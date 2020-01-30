@@ -191,7 +191,7 @@ class GeneralSudokuGrid:
     # One of the thins we could consider is partitions with less than N parts.
     #
 
-    ##############
+    ##############n
     # ATTRIBUTES #
     ##############
     _size       = 1  # Size of the grid.
@@ -282,7 +282,6 @@ class GeneralSudokuGrid:
         if self._grid[x,y] == 0 and self._options[v,x,y]:
             self._grid[x,y] = val
             self._options[:,x,y] = False
-            self._options[v,x,y] = True
             partMates = np.zeros([self._size,self._size], dtype = np.bool)
             K = self._partitions.shape[0]
             for k in range(K):
@@ -349,6 +348,36 @@ class GeneralSudokuGrid:
         else:
             return False
 
+
+    def fillCellsUniqueOptionOnPartition(self):
+        # This function fills the cells that have not been filled and that, on
+        # one of the parts, is the only one that has that option available. The
+        # function returns True if it is able to fill at least one cell.
+        #
+        # OUTPUT:
+        #  - FILLING: True if at least one entry was filled.
+        #
+        N = self._size
+        K = self._partN
+#        F = np.ones((N,N), dtype = np.bool) # Matrix of unFilled Positions
+        E = (self._grid == 0)                  # Empty cells
+        for k in range(K):
+            for n in range(N):
+                P = np.where(self._partitions[k] == n + 1)
+                Q = np.sum(self._options[:,P[0],P[1]], axis = 1)
+                R = np.where(Q == 1)
+                r = len(R[0])
+                if r > 0:
+                    for s in range(r):
+                        t = R[0][s]
+                        u = np.where(self._options[:,P[0],P[1]][t])[0][0]
+                        x = P[0][u]
+                        y = P[1][u]
+#                        if E[x,y] and F[x,y]:
+                        if E[x,y]:
+                            self.fillEntry(t+1,x,y)
+                            E[x,y] = False 
+#                            F[x,y] = False
 
 
 
