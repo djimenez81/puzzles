@@ -214,6 +214,7 @@ class GeneralSudokuGrid:
     # GETTERS #
     ###########
     def getPartitions(self):
+        # This function is a getter. I
         return self._partitions
 
 
@@ -376,7 +377,7 @@ class GeneralSudokuGrid:
 #                        if E[x,y] and F[x,y]:
                         if E[x,y]:
                             self.fillEntry(t+1,x,y)
-                            E[x,y] = False 
+                            E[x,y] = False
 #                            F[x,y] = False
 
 
