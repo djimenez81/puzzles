@@ -42,9 +42,7 @@
 #################
 #################
 ###           ###
-###           ###
 ###   NOTES   ###
-###           ###
 ###           ###
 #################
 #################
@@ -336,18 +334,18 @@ class GeneralSudokuGrid:
         # OUTPUT:
         #  - FILLING: True if at least one entry was filled.
         #
-        M = np.logical_and(np.sum(self._options, axis = 0) == 1, self._grid == 0)
+        M = np.logical_and(np.sum(self._options, axis = 0) == 1,self._grid == 0)
         M = np.where(M)
         K = len(M[0])
+        N = self._size
+        T = np.zeros([N, N], dtype = np.uint8)
         if K > 0:
             for k in range(K):
                 x = M[0][k]
                 y = M[1][k]
                 v = np.where(self._options[:,x,y])[0][0]
-                self.fillEntry(v + 1, x, y)
-            return True
-        else:
-            return False
+                T[x][y] = v + 1
+        return T
 
 
     def fillCellsUniqueOptionOnPartition(self):
@@ -360,7 +358,6 @@ class GeneralSudokuGrid:
         #
         N = self._size
         K = self._partN
-#        F = np.ones((N,N), dtype = np.bool) # Matrix of unFilled Positions
         E = (self._grid == 0)                  # Empty cells
         for k in range(K):
             for n in range(N):
@@ -374,11 +371,9 @@ class GeneralSudokuGrid:
                         u = np.where(self._options[:,P[0],P[1]][t])[0][0]
                         x = P[0][u]
                         y = P[1][u]
-#                        if E[x,y] and F[x,y]:
                         if E[x,y]:
                             self.fillEntry(t+1,x,y)
                             E[x,y] = False
-#                            F[x,y] = False
 
 
 
