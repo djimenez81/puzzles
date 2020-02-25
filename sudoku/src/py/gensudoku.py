@@ -404,6 +404,47 @@ class GeneralSudokuGrid:
 
 
 
+    def simpleBacktracking(self):
+        # This function performs the most basic backtracking algorithm possible,
+        # where the unfilled cells are filled in order (first by row, then by
+        # column), and the options are checked in increasing order (1, 2, etc).
+        #
+        # OUTPUT:
+        #  - N: Number of options checked.
+        #
+        N = 0
+        stack = []
+        initialGrid = self._grid
+        while not self.isFilled():
+            if self.isViable():
+                # First find first the first open cell.
+                P = np.where(self._grid == 0)
+                x = P[0][0]
+                y = P[1][0]
+                opt = np.where(self._options[:, x, y])[0]
+                opt = opt + 1
+                # Then find the first option possible for that cell.
+                n = opt[0]
+                opt = np.delete(opt,0)
+                # Add to stack a list with the option to try, the set of other
+                #    options possible, and the current grid and option matrix.
+                stack.append([n, opt, self])
+                # Add the option to the cell.
+                self.fillEntry(n,x,y)
+                # Increas N by 1.
+                N += 1
+            else:
+                # Check stack is not empty. If it is, then return N and say that
+                #    it is not possible to fill the array.
+                # If the stack is not empty, take the last state saved on there,
+                #    take the next option available, pop it and use it to fill
+                #    in the grid.
+                # Increas N by 1
+                pass
+        return N
+
+
+
 
     ###########
     # METHODS #
