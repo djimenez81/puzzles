@@ -161,9 +161,7 @@ def regularSudokuPartitions(N):
 ###################
 ###################
 ###             ###
-###             ###
 ###   CLASSES   ###
-###             ###
 ###             ###
 ###################
 ###################
@@ -295,6 +293,31 @@ class GeneralSudokuGrid:
         else:
             return False
 
+    def fillEntriesfromMatrix(self,T):
+        # This function takes a matrix with nonzero entries with values that
+        # must be filled on the grid in the position where they are located. It
+        # makes a check that the entries have not been already fill.
+        #
+        # INPUT:
+        #  - T: Matrix whose nonzero values on positions where they must be
+        #       filled
+        #
+        # OUTPUT:
+        #  - FILLED: Returns True if all entries were succesfully entered.
+        #
+        A = (self._grid != 0)
+        B = (T != 0)
+        C = np.logical_and(A,B)
+        flag = np.ndarray.any(C)
+        if flag:
+            return False
+        else:
+            P = np.where(B)
+            N = len(P[0])
+            for n in range(N):
+                self.fillEntry(T[P[0][n],P[1][n]], P[0][n], P[1][n])
+            return True
+
 
     def isFilled(self):
         # This function returns True if and only if all the cells in the grid
@@ -324,7 +347,7 @@ class GeneralSudokuGrid:
         return len(M[0]) == 0
 
 
-    def fillCellsWithUniqueOptions(self):
+    def findCellsWithUniqueOptions(self):
         # This function fills the cells that have not been filled yet, but have
         # a single option available. Only those that already have a single
         # option when the function starts, are considered. The function returns
@@ -348,7 +371,7 @@ class GeneralSudokuGrid:
         return T
 
 
-    def fillCellsUniqueOptionOnPartition(self):
+    def findCellsUniqueOptionOnPartition(self):
         # This function fills the cells that have not been filled and that, on
         # one of the parts, is the only one that has that option available. The
         # function returns True if it is able to fill at least one cell.
@@ -359,6 +382,7 @@ class GeneralSudokuGrid:
         N = self._size
         K = self._partN
         E = (self._grid == 0)                  # Empty cells
+        T = np.zeros([N, N], dtype = np.uint8)
         for k in range(K):
             for n in range(N):
                 P = np.where(self._partitions[k] == n + 1)
@@ -372,8 +396,11 @@ class GeneralSudokuGrid:
                         x = P[0][u]
                         y = P[1][u]
                         if E[x,y]:
-                            self.fillEntry(t+1,x,y)
-                            E[x,y] = False
+                            T[x,y] = t+1
+                        else:
+                            return False
+                            print("Trying to fill a filled cell")
+        return T
 
 
 
