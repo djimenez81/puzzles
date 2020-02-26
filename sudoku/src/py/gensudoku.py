@@ -434,12 +434,28 @@ class GeneralSudokuGrid:
                 # Increas N by 1.
                 N += 1
             else:
-                # Check stack is not empty. If it is, then return N and say that
-                #    it is not possible to fill the array.
-                # If the stack is not empty, take the last state saved on there,
-                #    take the next option available, pop it and use it to fill
-                #    in the grid.
-                # Increas N by 1
+                flag = True
+                while flag:
+                    # Check stack is not empty. If it is, then return N and say
+                    #    that it is not possible to fill the array.
+                    if len(stack) == 0:
+                        print("Grid proposed cannot be filed")
+                        return N
+                    # If the stack is not empty, take the last state saved on
+                    #    there, take the next option available, pop it and use
+                    #    it to fill in the grid.
+                    stackElement = stack.pop()
+                    opt = stackElement[1]
+                    if len(opt) > 0:
+                        sudokuGrid = stackElement[2]
+                        self._grid = sudokuGrid._grid
+                        self._options = sudokuGrid._options
+                        n = opt[0]
+                        opt = np.delete(opt,0)
+                        stack.append([n, opt, self])
+                        self.fillEntry(n,x,y)
+                    # Increas N by 1
+                    N += 1
                 pass
         return N
 
@@ -449,34 +465,6 @@ class GeneralSudokuGrid:
     ###########
     # METHODS #
     ###########
-
-class SomeClass:
-    # Description.
-
-    ##############
-    # ATTRIBUTES #
-    ##############
-
-
-    ############
-    # CREATORS #
-    ############
-
-
-    ###########
-    # GETTERS #
-    ###########
-
-
-    ###########
-    # SETTERS #
-    ###########
-
-    ###########
-    # METHODS #
-    ###########
-    pass
-
 
 ###############
 # END OF FILE #
