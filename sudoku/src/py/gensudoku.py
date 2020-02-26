@@ -36,17 +36,8 @@
 # OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
 
-
-#################
-#################
-#################
-###           ###
-###   NOTES   ###
-###           ###
-#################
-#################
-#################
 
 ################################
 ################################
@@ -55,10 +46,11 @@
 ##                            ##
 ################################
 ################################
+#
 # 1. The empty cell is a 0.
 # 2. The numeration of rows and columns starts in 0. This also means that the
 #    value has to be taken into consideration
-
+#
 
 ###################
 ###################
@@ -84,16 +76,6 @@ import math
 # GLOBAL VARIABLES #
 ####################
 
-################################
-################################
-################################
-###                          ###
-###   METHODS AND FUNCTIONS  ###
-###                          ###
-################################
-################################
-################################
-
 #################
 #################
 ##             ##
@@ -101,56 +83,9 @@ import math
 ##             ##
 #################
 #################
-def latinSquarePartitions(N):
-    # This function returns partitions corresponding to the regular Latin
-    # Squares. This means, that the partitions are, first, the rows, and second,
-    # the columns.
-    #
-    # INPUT:
-    #   - N: unsigned integer up to 255 (uint8)
-    #
-    # OUTPUT:
-    #   - partitions: NumPy arrays of uint8 elements, NxN, where on the first,
-    #                 each row is a part of the partition, and on the second,
-    #                 each column is a part of the partition.
-    #
-    A = np.zeros([N, N], dtype = np.uint8)
-    B = np.zeros([N, N], dtype = np.uint8)
-    for n in range(N):
-        A[n,:] = n + 1
-        B[:,n] = n + 1
-    return (A,B)
+def dumbBacktracking(G):
+    pass
 
-
-def regularSudokuPartitions(N):
-    # This function returns the partition corresponding to the regular sudoku.
-    # This means, the partitions are, first, the rows, second, the columns, and
-    # third, the boxes.
-    #
-    # INPUT:
-    #   - N: unsigned square integer up to 225 (uint8)
-    #
-    # OUTPUT:
-    #   - partitions: A list of three NumPy array of uint8 elements, NxN, with
-    #                 the respective partitions.
-    #
-    # First check if the number given is a perfect square.
-    K = math.sqrt(N)
-    if not K.is_integer():
-        print("\nERROR: Trying to make a sudoku grid with no square size\n")
-        return False
-    else:
-        K = int(K)
-    A = np.zeros([N, N], dtype = np.uint8)
-    B = np.zeros([N, N], dtype = np.uint8)
-    C = np.zeros([N, N], dtype = np.uint8)
-    for n in range(N):
-        p = n // K
-        q = n % K
-        A[n,:] = n + 1
-        B[:,n] = n + 1
-        C[K*p:(K*p+K),K*q:(K*q+K)] = n+1
-    return (A,B,C)
 
 def findCellsWithUniqueOptions(G):
     # This function computes a matrix with the cells that have not been filled
@@ -216,16 +151,56 @@ def findCellsUniqueOptionOnPartition(G):
     return T
 
 
+def latinSquarePartitions(N):
+    # This function returns partitions corresponding to the regular Latin
+    # Squares. This means, that the partitions are, first, the rows, and second,
+    # the columns.
+    #
+    # INPUT:
+    #   - N: unsigned integer up to 255 (uint8)
+    #
+    # OUTPUT:
+    #   - partitions: NumPy arrays of uint8 elements, NxN, where on the first,
+    #                 each row is a part of the partition, and on the second,
+    #                 each column is a part of the partition.
+    #
+    A = np.zeros([N, N], dtype = np.uint8)
+    B = np.zeros([N, N], dtype = np.uint8)
+    for n in range(N):
+        A[n,:] = n + 1
+        B[:,n] = n + 1
+    return (A,B)
 
-###################
-###################
-###################
-###             ###
-###   CLASSES   ###
-###             ###
-###################
-###################
-###################
+
+def regularSudokuPartitions(N):
+    # This function returns the partition corresponding to the regular sudoku.
+    # This means, the partitions are, first, the rows, second, the columns, and
+    # third, the boxes.
+    #
+    # INPUT:
+    #   - N: unsigned square integer up to 225 (uint8)
+    #
+    # OUTPUT:
+    #   - partitions: A list of three NumPy array of uint8 elements, NxN, with
+    #                 the respective partitions.
+    #
+    # First check if the number given is a perfect square.
+    K = math.sqrt(N)
+    if not K.is_integer():
+        print("\nERROR: Trying to make a sudoku grid with no square size\n")
+        return False
+    else:
+        K = int(K)
+    A = np.zeros([N, N], dtype = np.uint8)
+    B = np.zeros([N, N], dtype = np.uint8)
+    C = np.zeros([N, N], dtype = np.uint8)
+    for n in range(N):
+        p = n // K
+        q = n % K
+        A[n,:] = n + 1
+        B[:,n] = n + 1
+        C[K*p:(K*p+K),K*q:(K*q+K)] = n+1
+    return (A,B,C)
 
 
 ##############################
