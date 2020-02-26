@@ -236,14 +236,9 @@ class GeneralSudokuGrid:
         # INPUT:
         #  - partitions: List of NxN matrices.
         #
-
-        # There should be some partition verifications system
         K = len(partitions)
-        if K == 0:
-            print("\nERROR: Trying to set empty partitions\n")
-        else:
-            self._partN = K
-            self._partitions = np.asarray(partitions)
+        self._partN = K
+        self._partitions = np.asarray(partitions)
 
 
     def setGridFromArray(self,theArray):
