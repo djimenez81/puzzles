@@ -88,9 +88,7 @@ import math
 ################################
 ################################
 ###                          ###
-###                          ###
 ###   METHODS AND FUNCTIONS  ###
-###                          ###
 ###                          ###
 ################################
 ################################
@@ -331,6 +329,19 @@ class GeneralSudokuGrid:
             for n in range(N):
                 self.fillEntry(T[P[0][n],P[1][n]], P[0][n], P[1][n])
             return True
+
+    def deactivateOption(self,x,y,v):
+        # This method is used when an option must be set to no longer be
+        # considered viable.
+        #
+        # INPUT:
+        #  - x: First coordinate of the value to be turned off.
+        #  - y: Second coordinate of the value to be turned off.
+        #  - v: Value to be turned off (1 to N, not 0 to N-1)
+        #
+        v -= 1
+        self._options[v,x,t] = False
+
 
 
     def isFilled(self):
