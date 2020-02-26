@@ -152,6 +152,68 @@ def regularSudokuPartitions(N):
         C[K*p:(K*p+K),K*q:(K*q+K)] = n+1
     return (A,B,C)
 
+def findCellsWithUniqueOptions(G):
+    # This function computes a matrix with the cells that have not been filled
+    # yet, but have a single option available. Only those that already have a
+    # single option when the function starts, are considered.
+    #
+    # INPUT:
+    #  - G: A GeneralSudokuGrid object that has already been initialized.
+    #
+    # OUTPUT:
+    #  - T: Matrix containing entries that can be filled and zeros in all other
+    #       entries. It might be an all zeroes.
+    #
+    size    = G.getSize()
+    options = G.getOptions()
+    grid    = G.getGrid()
+
+    M = np.logical_and(np.sum(options,axis = 0) == 1, grid == 0)
+    M = np.where(M)
+    K = len(M[0])
+    T = np.zeros([size,size], dtype = np.uint8)
+
+    for k in range(K):
+        x = M[0][k]
+        y = M[1][k]
+        v = np.where(options[:,x,y])[0][0]
+        T[x,y] = v + 1
+    return T
+
+
+def findCellsUniqueOptionOnPartition(G):
+    # This function finds the cells that have not been filled and that, on one
+    # of the parts, is the only one that has that option available.
+    #
+    # INPUT:
+    #  - G: A GeneralSudokuGrid object that has already been initialized.
+    #
+    # OUTPUT:
+    #  - T: Matrix containing entries that can be filled and zeros in all other
+    #       entries. It might be an all zeroes.
+    #
+
+    size       = G.getSize()
+    partitions = G.getPartitions()
+    options    = G.getOptions()
+    grid       = G.getGrid()
+    partN      = G.getNumberOfPartitions()
+
+    T = np.zeros([size,size], dtype = np.uint8)
+
+    for k in range(partN):
+        for n in range(size):
+            P = np.where(partitions[k] == n + 1)
+            Q = np.sum(options[:,P[0],P[1]], axis = 1)
+            R = np.where(Q == 1)
+            S = len(R[0])
+            for s in range(S):
+                t = R[0][s]
+                u = np.where(options[:,P[0],P[1]][t])[0][0]
+                x = P[0][u]
+                y = P[1][u]
+                T[x,y] = t + 1
+    return T
 
 
 
