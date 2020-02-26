@@ -176,15 +176,18 @@ def regularSudokuPartitions(N):
 ##############################
 ##############################
 class GeneralSudokuGrid:
-    # This class contains some basic structure and functionality for the
-    # implementation of a more general puzzle based on Sudoku. In this case, it
-    # is based on an NxN grid, that is separated in k partitions of N parts each
-    # where each part has N cells. This is, for example, one of the partitions
-    # can be consider, in the regular sudoku, as the rows, another as the
-    # columns, and the last as the boxes. But in this case, it is not necessary
-    # to have only three. One is too few, but beyond that, anything is allowed.
+    # This class contains some basic structure and for the implementation of a
+    # more general puzzle based on Sudoku. In this case, it is based on an NxN
+    # grid, that is separated in k partitions of N parts each where each part
+    # has N cells. This is, for example, one of the partitions can be consider,
+    # in the regular sudoku, as the rows, another as the columns, and the last
+    # as the boxes. But in this case, it is not necessary to have only three.
+    # One is too few, but beyond that, anything is allowed.
     #
     # One of the thins we could consider is partitions with less than N parts.
+    #
+    # The functionality, that is, the logic of solution, is outside of this
+    # class.
     #
 
     ##############n
@@ -210,8 +213,19 @@ class GeneralSudokuGrid:
     # GETTERS #
     ###########
     def getPartitions(self):
-        # This function is a getter. I
         return self._partitions
+
+    def getGrid(self):
+        return self._grid
+
+    def getOptions(self):
+        return self._options
+
+    def getNumberOfPartitions(self):
+        return self._partN
+
+    def getSize(self):
+        return self._size
 
 
     ###########
@@ -346,125 +360,6 @@ class GeneralSudokuGrid:
         M = np.where(M)
         return len(M[0]) == 0
 
-
-    def findCellsWithUniqueOptions(self):
-        # This function fills the cells that have not been filled yet, but have
-        # a single option available. Only those that already have a single
-        # option when the function starts, are considered. The function returns
-        # true if it filled at least one entrance. A false indicates that
-        # a further technique should be considered.
-        #
-        # OUTPUT:
-        #  - FILLING: True if at least one entry was filled.
-        #
-        M = np.logical_and(np.sum(self._options, axis = 0) == 1,self._grid == 0)
-        M = np.where(M)
-        K = len(M[0])
-        N = self._size
-        T = np.zeros([N, N], dtype = np.uint8)
-        if K > 0:
-            for k in range(K):
-                x = M[0][k]
-                y = M[1][k]
-                v = np.where(self._options[:,x,y])[0][0]
-                T[x][y] = v + 1
-        return T
-
-
-    def findCellsUniqueOptionOnPartition(self):
-        # This function fills the cells that have not been filled and that, on
-        # one of the parts, is the only one that has that option available. The
-        # function returns True if it is able to fill at least one cell.
-        #
-        # OUTPUT:
-        #  - FILLING: True if at least one entry was filled.
-        #
-        N = self._size
-        K = self._partN
-        E = (self._grid == 0)                  # Empty cells
-        T = np.zeros([N, N], dtype = np.uint8)
-        for k in range(K):
-            for n in range(N):
-                P = np.where(self._partitions[k] == n + 1)
-                Q = np.sum(self._options[:,P[0],P[1]], axis = 1)
-                R = np.where(Q == 1)
-                r = len(R[0])
-                if r > 0:
-                    for s in range(r):
-                        t = R[0][s]
-                        u = np.where(self._options[:,P[0],P[1]][t])[0][0]
-                        x = P[0][u]
-                        y = P[1][u]
-                        if E[x,y]:
-                            T[x,y] = t+1
-                        else:
-                            return False
-                            print("Trying to fill a filled cell")
-        return T
-
-
-
-    def simpleBacktracking(self):
-        # This function performs the most basic backtracking algorithm possible,
-        # where the unfilled cells are filled in order (first by row, then by
-        # column), and the options are checked in increasing order (1, 2, etc).
-        #
-        # OUTPUT:
-        #  - N: Number of options checked.
-        #
-        N = 0
-        stack = []
-        initialGrid = self._grid
-        while not self.isFilled():
-            if self.isViable():
-                # First find first the first open cell.
-                P = np.where(self._grid == 0)
-                x = P[0][0]
-                y = P[1][0]
-                opt = np.where(self._options[:, x, y])[0]
-                opt = opt + 1
-                # Then find the first option possible for that cell.
-                n = opt[0]
-                opt = np.delete(opt,0)
-                # Add to stack a list with the option to try, the set of other
-                #    options possible, and the current grid and option matrix.
-                stack.append([n, opt, self])
-                # Add the option to the cell.
-                self.fillEntry(n,x,y)
-                # Increas N by 1.
-                N += 1
-            else:
-                flag = True
-                while flag:
-                    # Check stack is not empty. If it is, then return N and say
-                    #    that it is not possible to fill the array.
-                    if len(stack) == 0:
-                        print("Grid proposed cannot be filed")
-                        return N
-                    # If the stack is not empty, take the last state saved on
-                    #    there, take the next option available, pop it and use
-                    #    it to fill in the grid.
-                    stackElement = stack.pop()
-                    opt = stackElement[1]
-                    if len(opt) > 0:
-                        sudokuGrid = stackElement[2]
-                        self._grid = sudokuGrid._grid
-                        self._options = sudokuGrid._options
-                        n = opt[0]
-                        opt = np.delete(opt,0)
-                        stack.append([n, opt, self])
-                        self.fillEntry(n,x,y)
-                    # Increas N by 1
-                    N += 1
-                pass
-        return N
-
-
-
-
-    ###########
-    # METHODS #
-    ###########
 
 ###############
 # END OF FILE #
