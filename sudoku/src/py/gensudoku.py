@@ -89,7 +89,6 @@ def dumbBacktracking(G, display = False):
     # 2. backtrack: It is time to backtrack a step.
     # 3. checkNow: It is time to ckeck if we can now add a new clue.
     # 4. justIncerted: A clue has just been inserted.
-
     N            = 0
     stack        = []
     solutions    = []
@@ -100,14 +99,18 @@ def dumbBacktracking(G, display = False):
     advance      = False
     while flag:
         N += 1
+        print(N)
         if justIncerted:
             justIncerted = False
             if G.isFilled():
                 solutions.append(G.getGrid())
                 backtrack = True
+                print("Found a solution. Now backtracking.")
             elif G.isViable():
                 advance = True
+                print("Grid is still viable. Now advancing")
             else:
+                print("Grid is no longer viable. Now backtracking")
                 backtrack = False
         elif checkNow:
             checkNow = False
@@ -117,6 +120,7 @@ def dumbBacktracking(G, display = False):
                 if tempFlag:
                     stack.append([(x,y),opt,G])
                     advance = True
+                    print("")
                 else:
                     checkNow = True
             else:
