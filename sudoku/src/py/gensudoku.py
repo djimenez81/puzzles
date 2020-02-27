@@ -83,8 +83,85 @@ import math
 ##             ##
 #################
 #################
-def dumbBacktracking(G):
-    pass
+def dumbBacktracking(G, display = False):
+    options    = G.getOptions() #
+    grid       = G.getGrid() #
+
+    N = 0 # Number of entries made to the gridself.
+    stack = [] # Stack
+    flag = True
+    solutions = []
+
+    if G.isFilled():
+        solutions.append(grid)
+        flag = False
+    else:
+        P = np.where(grid == 0)
+        x = P[0][0]
+        y = P[1][0]
+        opt = list(np.where(options[:,x,y])[0] + 1)
+        entry = opt.pop()
+        stack.append([(x,y), opt, G])
+        fillNow = True
+
+    while flag:
+        N += 1
+        print(N)
+        if G.isFilled():
+            solutions.append(G.getGrid())
+            if len(stack) == 0:
+                flag = False
+            else:
+                stackElement = stack.pop()
+                opt   = stackElement[1]
+                while len(stack) > 0 and len(opt) == 0:
+                    N += 1
+                    stackElement = stack.pop()
+                    opt = stackElement[1]
+                if len(stack) == 0:
+                    flag = False
+                else:
+                    entry = opt.pop()
+                    G = stackElement[2]
+                    x = stackElement[0][0]
+                    y = stackElement[0][1]
+                    fillNow = True
+        elif fillNow:
+            tempFlag = G.fillEntry(entry,x,y)
+            if tempFlag:
+                fillNow = False
+            else:
+                if len(opt) > 0:
+                    entry = opt.pop()
+                elif len(stack) > 0:
+                    while len(stack) > 0 and len(opt) == 0:
+                        N += 1
+                        stackElement = stack.pop()
+                        opt = stackElement[1]
+                    if len(stack) == 0:
+                        flag = False
+                    else:
+                        entry = opt.pop()
+                        G = stackElement[2]
+                        x = stackElement[0][0]
+                        y = stackElement[0][1]
+                        fillNow = True
+                else:
+                    flag = False
+        else:
+            options = G.getOptions()
+            grid    = G.getGrid()
+            P = np.where(grid == 0)
+            x = P[0][0]
+            y = P[1][0]
+            opt = list(np.where(options[:,x,y])[0] + 1)
+            entry = opt.pop()
+            stack.append([(x,y), opt, G])
+            fillNow = True
+    if display:
+        print(N)
+    return solutions
+
 
 
 def findCellsWithUniqueOptions(G):
@@ -99,6 +176,7 @@ def findCellsWithUniqueOptions(G):
     #  - T: Matrix containing entries that can be filled and zeros in all other
     #       entries. It might be an all zeroes.
     #
+
     size    = G.getSize()
     options = G.getOptions()
     grid    = G.getGrid()
@@ -298,6 +376,7 @@ class GeneralSudokuGrid:
                     val = theArray[x,y]
                     if val > 0:
                         flag &= self.fillEntry(val,x,y)
+            return flag
         else:
             return False
 
@@ -356,11 +435,12 @@ class GeneralSudokuGrid:
         if flag:
             return False
         else:
+            flag = True
             P = np.where(B)
             N = len(P[0])
             for n in range(N):
-                self.fillEntry(T[P[0][n],P[1][n]], P[0][n], P[1][n])
-            return True
+                flag &= self.fillEntry(T[P[0][n],P[1][n]], P[0][n], P[1][n])
+            return flag
 
     def deactivateOption(self,x,y,v):
         # This method is used when an option must be set to no longer be
