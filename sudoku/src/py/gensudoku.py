@@ -84,14 +84,79 @@ import math
 #################
 #################
 def dumbBacktracking(G, display = False):
+    # There are several states for backtracking:
+    # 1. advance: It is time to look for a next clue.
+    # 2. backtrack: It is time to backtrack a step.
+    # 3. checkNow: It is time to ckeck if we can now add a new clue.
+    # 4. justIncerted: A clue has just been inserted.
+
+    N            = 0
+    stack        = []
+    solutions    = []
+    flag         = True
+    justIncerted = True
+    checkNow     = False
+    backtrack    = False
+    advance      = False
+    while flag:
+        N += 1
+        if justIncerted:
+            justIncerted = False
+            if G.isFilled():
+                solutions.append(G.getGrid())
+                backtrack = True
+            elif G.isViable():
+                advance = True
+            else:
+                backtrack = False
+        elif checkNow:
+            checkNow = False
+            if len(opt) > 0:
+                entry = opt.pop()
+                tempFlag = G.fillEntry(entry,x,y)
+                if tempFlag:
+                    stack.append([(x,y),opt,G])
+                    advance = True
+                else:
+                    checkNow = True
+            else:
+                backtrack = True
+        elif backtrack:
+            backtrack = False
+            if len(stack) > 0:
+                checkNow = True
+                stackElement = stack.pop()
+                opt = stackElement[1]
+                G   = stackElement[2]
+                x   = stackElement[0][0]
+                y   = stackElement[0][1]
+            else:
+                flag = False
+        elif advance:
+            advance = False
+            if G.isFilled():
+                backtrack = True
+                solutions.append(G.getGrid())
+            else:
+                checkNow = True
+                P = np.where(G.getGrid() == 0)
+                x = P[0][0]
+                y = P[1][0]
+                opt = list(np.where(G.getOptions()[:,x,y])[0] + 1)
+        else:
+            print("Opsie! This is for debugging. You should not see this")
+            flag = False
+    if display:
+        print(N)
+    return solutions
+
+    """
     options    = G.getOptions() #
     grid       = G.getGrid() #
-
     N = 0 # Number of entries made to the gridself.
     stack = [] # Stack
     flag = True
     solutions = []
-
     if G.isFilled():
         solutions.append(grid)
         flag = False
@@ -161,7 +226,7 @@ def dumbBacktracking(G, display = False):
     if display:
         print(N)
     return solutions
-
+   """
 
 
 def findCellsWithUniqueOptions(G):
