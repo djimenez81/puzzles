@@ -72,6 +72,7 @@ import numpy as np
 import math
 import copy
 import time
+import pdb
 # from math import sqrt
 
 ####################
@@ -85,8 +86,107 @@ import time
 ##             ##
 #################
 #################
-def randomBacktracking():
-    pass
+def randomBacktracking(G, display = False):
+    # This function takes an original sudoku grid, and solves it doing a
+    # backtracking strategy, adding a minimal strategy (filling automatically
+    # those cells witho a unique option without making a split point) and it
+    # finds all possible solutions for the given grid. At each break point, it
+    # searches for all cells with the minimum number of options open (hopefully
+    # just two), and chooses one randomly. It also shuffles the options.
+    #
+    # INPUT:
+    #  - G: The sudoku grid to be filled.
+    #  - display: Optional, it displays the number of cycles of the loop and
+    #             time elapsed finding all solutions.
+    #
+    # OUTPUT:
+    #  - solutions: a list of NumPy arrays, with all the possible correct
+    #               solutions of the proposed grid. It might be empty if there
+    #               is no solution.
+    #
+    t = time.time()
+    N            = 0
+    stack        = []
+    solutions    = []
+    flag         = True
+    justIncerted = True
+    checkNow     = False
+    backtrack    = False
+    advance      = False
+    while flag:
+        N += 1
+        if justIncerted:
+            justIncerted = False
+            if G.isFilled():
+                solutions.append(copy.deepcopy(G.getGrid()))
+                backtrack = True
+            else:
+                flag2 = True
+                while flag2:
+                    T = findCellsWithUniqueOptions(G)
+                    M = len(np.where(T > 0)[0])
+                    if M > 0:
+                        N += M
+                        G.fillEntriesfromMatrix(T)
+                    else:
+                        N += 1
+                        flag2 = False
+                if G.isFilled():
+                    solutions.append(copy.deepcopy(G.getGrid()))
+                    backtrack = True
+                elif G.isViable():
+                    advance = True
+                else:
+                    backtrack = True
+        elif checkNow:
+            checkNow = False
+            if len(opt) > 0:
+                entry = opt.pop()
+                stack.append([(x,y),opt,copy.deepcopy(G)])
+                tempFlag = G.fillEntry(entry,x,y)
+                if tempFlag:
+                    advance = True
+                else:
+                    checkNow = True
+            else:
+                backtrack = True
+        elif backtrack:
+            backtrack = False
+            if len(stack) > 0:
+                checkNow = True
+                stackElement = stack.pop()
+                opt = stackElement[1]
+                G   = stackElement[2]
+                x   = stackElement[0][0]
+                y   = stackElement[0][1]
+            else:
+                flag = False
+        elif advance:
+            advance = False
+            if G.isFilled():
+                backtrack = True
+                solutions.append(G.getGrid())
+            else:
+                checkNow = True
+                T = np.sum(G.getOptions(), axis = 0)
+                pdb.set_trace()
+                minOpt = min(T[np.where(T > 0)])
+                I = np.where(T == minOpt)
+                q = len(I[0])
+                idx = np.random.randint(q)
+                x = I[0][idx]
+                y = I[1][idx]
+                opt = np.where(G.getOptions()[:,x,y])[0] + 1
+                np.random.shuffle(opt)
+                opt = list(opt)
+        else:
+            print("Opsie! This is for debugging. You should not see this")
+            flag = False
+    elapsed = time.time() - t
+    if display:
+        print(N)
+        print(elapsed)
+    return solutions
 
 
 def dumbBacktracking(G, display = False):
@@ -121,12 +221,12 @@ def dumbBacktracking(G, display = False):
         if justIncerted:
             justIncerted = False
             if G.isFilled():
-                solutions.append(G.getGrid())
+                solutions.append(copy.deepcopy(G.getGrid()))
                 backtrack = True
             elif G.isViable():
                 advance = True
             else:
-                backtrack = False
+                backtrack = True
         elif checkNow:
             checkNow = False
             if len(opt) > 0:
