@@ -70,6 +70,8 @@
 ###########
 import numpy as np
 import math
+import copy
+import time
 # from math import sqrt
 
 ####################
@@ -83,12 +85,29 @@ import math
 ##             ##
 #################
 #################
+def randomBacktracking():
+    pass
+
+
 def dumbBacktracking(G, display = False):
-    # There are several states for backtracking:
-    # 1. advance: It is time to look for a next clue.
-    # 2. backtrack: It is time to backtrack a step.
-    # 3. checkNow: It is time to ckeck if we can now add a new clue.
-    # 4. justIncerted: A clue has just been inserted.
+    # This function takes an original sudoku grid, and doing the most basic idea
+    # of backtracking, it finds all possible solutions for the given grid. By
+    # the most basic backtracking, it means that it does not worry if there is
+    # only one option (those usually can be filled automatically), and it goes
+    # in order, without choosing an option with the minimum number of open
+    # option.
+    #
+    # INPUT:
+    #  - G: The sudoku grid to be filled.
+    #  - display: Optional, it displays the number of cycles of the loop and
+    #             time elapsed finding all solutions.
+    #
+    # OUTPUT:
+    #  - solutions: a list of NumPy arrays, with all the possible correct
+    #               solutions of the proposed grid. It might be empty if there
+    #               is no solution.
+    #
+    t = time.time()
     N            = 0
     stack        = []
     solutions    = []
@@ -99,28 +118,23 @@ def dumbBacktracking(G, display = False):
     advance      = False
     while flag:
         N += 1
-        print(N)
         if justIncerted:
             justIncerted = False
             if G.isFilled():
                 solutions.append(G.getGrid())
                 backtrack = True
-                print("Found a solution. Now backtracking.")
             elif G.isViable():
                 advance = True
-                print("Grid is still viable. Now advancing")
             else:
-                print("Grid is no longer viable. Now backtracking")
                 backtrack = False
         elif checkNow:
             checkNow = False
             if len(opt) > 0:
                 entry = opt.pop()
+                stack.append([(x,y),opt,copy.deepcopy(G)])
                 tempFlag = G.fillEntry(entry,x,y)
                 if tempFlag:
-                    stack.append([(x,y),opt,G])
                     advance = True
-                    print("")
                 else:
                     checkNow = True
             else:
@@ -150,87 +164,11 @@ def dumbBacktracking(G, display = False):
         else:
             print("Opsie! This is for debugging. You should not see this")
             flag = False
+    elapsed = time.time() - t
     if display:
         print(N)
+        print(elapsed)
     return solutions
-
-    """
-    options    = G.getOptions() #
-    grid       = G.getGrid() #
-    N = 0 # Number of entries made to the gridself.
-    stack = [] # Stack
-    flag = True
-    solutions = []
-    if G.isFilled():
-        solutions.append(grid)
-        flag = False
-    else:
-        P = np.where(grid == 0)
-        x = P[0][0]
-        y = P[1][0]
-        opt = list(np.where(options[:,x,y])[0] + 1)
-        entry = opt.pop()
-        stack.append([(x,y), opt, G])
-        fillNow = True
-
-    while flag:
-        N += 1
-        print(N)
-        if G.isFilled():
-            solutions.append(G.getGrid())
-            if len(stack) == 0:
-                flag = False
-            else:
-                stackElement = stack.pop()
-                opt   = stackElement[1]
-                while len(stack) > 0 and len(opt) == 0:
-                    N += 1
-                    stackElement = stack.pop()
-                    opt = stackElement[1]
-                if len(stack) == 0:
-                    flag = False
-                else:
-                    entry = opt.pop()
-                    G = stackElement[2]
-                    x = stackElement[0][0]
-                    y = stackElement[0][1]
-                    fillNow = True
-        elif fillNow:
-            tempFlag = G.fillEntry(entry,x,y)
-            if tempFlag:
-                fillNow = False
-            else:
-                if len(opt) > 0:
-                    entry = opt.pop()
-                elif len(stack) > 0:
-                    while len(stack) > 0 and len(opt) == 0:
-                        N += 1
-                        stackElement = stack.pop()
-                        opt = stackElement[1]
-                    if len(stack) == 0:
-                        flag = False
-                    else:
-                        entry = opt.pop()
-                        G = stackElement[2]
-                        x = stackElement[0][0]
-                        y = stackElement[0][1]
-                        fillNow = True
-                else:
-                    flag = False
-        else:
-            options = G.getOptions()
-            grid    = G.getGrid()
-            P = np.where(grid == 0)
-            x = P[0][0]
-            y = P[1][0]
-            opt = list(np.where(options[:,x,y])[0] + 1)
-            entry = opt.pop()
-            stack.append([(x,y), opt, G])
-            fillNow = True
-    if display:
-        print(N)
-    return solutions
-   """
 
 
 def findCellsWithUniqueOptions(G):
