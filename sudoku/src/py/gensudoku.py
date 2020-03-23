@@ -50,6 +50,8 @@
 # 1. The empty cell is a 0.
 # 2. The numeration of rows and columns starts in 0. This also means that the
 #    value has to be taken into consideration
+# 3. For partial partitions (this is, partitions where not all the cells are on
+#    one of the parts), the cells not on parts are marked by 0s
 #
 
 ###################
@@ -63,6 +65,64 @@
 # 1. The maximum size that can be used is 255, as we are using numpy type uint8
 #    for the values
 #
+
+###########################
+###########################
+##                       ##
+##  THINGS TO IMPLEMENT  ##
+##                       ##
+###########################
+###########################
+#
+# FUNCTIONS:
+# - backtracking: The regular dumb backtracking
+# - randomizeBacktracking: Backtracking with the
+# - latinSquarePartitions
+# - regularSudokuPartitions
+#
+# CLASS
+# - GeneralSudokuGrid:
+#   + ATTRIBUTES:
+#     * size
+#     * numberOfPartitions
+#     * grid
+#     * options
+#     * partitions
+#   + GETTERS AND SETTERS
+#   + FUNCTIONS:
+#     * fillEntry
+#     * fillEntriesfromMatrix
+#     * findCellsSharingPartition (all the cells that are on a partition where
+#                                  the given cell is too)
+#     * deactivateOption
+#     * isFilled
+#     * isViable
+#     * unfilled
+#     * findCellsWithUniqueOptions
+#     * findCellsUniqueOptionOnPartition
+#     * findAllCellsWithMinimumOptions
+#   + STRATEGIES:
+#     * LEVEL 0
+#       > Single Option on Cell
+#       > Cells with unique option within a partition
+#       > Clean up
+#     * LEVEL 1
+#       > Naked Pair
+#       > Hidden Pair
+#       > BoxLine
+#       > Pointing Line
+#     * LEVEL 2
+#       > Naked Triple and Naked Quad
+#       > Hidden Triple
+#       > X-Wing (Strategy Line-2)
+#       > Y-Wing
+#     * LEVEL 3
+#       > XY-Chain
+#       > Rectangle Strategy
+#     * LEVEL 4
+#       > backtracking
+#
+
 
 
 ###########
@@ -86,256 +146,6 @@ import pdb
 ##             ##
 #################
 #################
-def randomBacktracking(G, display = False):
-    # This function takes an original sudoku grid, and solves it doing a
-    # backtracking strategy, adding a minimal strategy (filling automatically
-    # those cells witho a unique option without making a split point) and it
-    # finds all possible solutions for the given grid. At each break point, it
-    # searches for all cells with the minimum number of options open (hopefully
-    # just two), and chooses one randomly. It also shuffles the options.
-    #
-    # INPUT:
-    #  - G: The sudoku grid to be filled.
-    #  - display: Optional, it displays the number of cycles of the loop and
-    #             time elapsed finding all solutions.
-    #
-    # OUTPUT:
-    #  - solutions: a list of NumPy arrays, with all the possible correct
-    #               solutions of the proposed grid. It might be empty if there
-    #               is no solution.
-    #
-    t = time.time()
-    N            = 0
-    stack        = []
-    solutions    = []
-    flag         = True
-    justIncerted = True
-    checkNow     = False
-    backtrack    = False
-    advance      = False
-    while flag:
-        N += 1
-        if justIncerted:
-            justIncerted = False
-            if G.isFilled():
-                solutions.append(copy.deepcopy(G.getGrid()))
-                backtrack = True
-            else:
-                flag2 = True
-                while flag2:
-                    T = findCellsWithUniqueOptions(G)
-                    M = len(np.where(T > 0)[0])
-                    if M > 0:
-                        N += M
-                        G.fillEntriesfromMatrix(T)
-                    else:
-                        N += 1
-                        flag2 = False
-                if G.isFilled():
-                    solutions.append(copy.deepcopy(G.getGrid()))
-                    backtrack = True
-                elif G.isViable():
-                    advance = True
-                else:
-                    backtrack = True
-        elif checkNow:
-            checkNow = False
-            if len(opt) > 0:
-                entry = opt.pop()
-                stack.append([(x,y),opt,copy.deepcopy(G)])
-                tempFlag = G.fillEntry(entry,x,y)
-                if tempFlag:
-                    advance = True
-                else:
-                    checkNow = True
-            else:
-                backtrack = True
-        elif backtrack:
-            backtrack = False
-            if len(stack) > 0:
-                checkNow = True
-                stackElement = stack.pop()
-                opt = stackElement[1]
-                G   = stackElement[2]
-                x   = stackElement[0][0]
-                y   = stackElement[0][1]
-            else:
-                flag = False
-        elif advance:
-            advance = False
-            if G.isFilled():
-                backtrack = True
-                solutions.append(G.getGrid())
-            else:
-                checkNow = True
-                T = np.sum(G.getOptions(), axis = 0)
-                pdb.set_trace()
-                minOpt = min(T[np.where(T > 0)])
-                I = np.where(T == minOpt)
-                q = len(I[0])
-                idx = np.random.randint(q)
-                x = I[0][idx]
-                y = I[1][idx]
-                opt = np.where(G.getOptions()[:,x,y])[0] + 1
-                np.random.shuffle(opt)
-                opt = list(opt)
-        else:
-            print("Opsie! This is for debugging. You should not see this")
-            flag = False
-    elapsed = time.time() - t
-    if display:
-        print(N)
-        print(elapsed)
-    return solutions
-
-
-def dumbBacktracking(G, display = False):
-    # This function takes an original sudoku grid, and doing the most basic idea
-    # of backtracking, it finds all possible solutions for the given grid. By
-    # the most basic backtracking, it means that it does not worry if there is
-    # only one option (those usually can be filled automatically), and it goes
-    # in order, without choosing an option with the minimum number of open
-    # option.
-    #
-    # INPUT:
-    #  - G: The sudoku grid to be filled.
-    #  - display: Optional, it displays the number of cycles of the loop and
-    #             time elapsed finding all solutions.
-    #
-    # OUTPUT:
-    #  - solutions: a list of NumPy arrays, with all the possible correct
-    #               solutions of the proposed grid. It might be empty if there
-    #               is no solution.
-    #
-    t = time.time()
-    N            = 0
-    stack        = []
-    solutions    = []
-    flag         = True
-    justIncerted = True
-    checkNow     = False
-    backtrack    = False
-    advance      = False
-    while flag:
-        N += 1
-        if justIncerted:
-            justIncerted = False
-            if G.isFilled():
-                solutions.append(copy.deepcopy(G.getGrid()))
-                backtrack = True
-            elif G.isViable():
-                advance = True
-            else:
-                backtrack = True
-        elif checkNow:
-            checkNow = False
-            if len(opt) > 0:
-                entry = opt.pop()
-                stack.append([(x,y),opt,copy.deepcopy(G)])
-                tempFlag = G.fillEntry(entry,x,y)
-                if tempFlag:
-                    advance = True
-                else:
-                    checkNow = True
-            else:
-                backtrack = True
-        elif backtrack:
-            backtrack = False
-            if len(stack) > 0:
-                checkNow = True
-                stackElement = stack.pop()
-                opt = stackElement[1]
-                G   = stackElement[2]
-                x   = stackElement[0][0]
-                y   = stackElement[0][1]
-            else:
-                flag = False
-        elif advance:
-            advance = False
-            if G.isFilled():
-                backtrack = True
-                solutions.append(G.getGrid())
-            else:
-                checkNow = True
-                P = np.where(G.getGrid() == 0)
-                x = P[0][0]
-                y = P[1][0]
-                opt = list(np.where(G.getOptions()[:,x,y])[0] + 1)
-        else:
-            print("Opsie! This is for debugging. You should not see this")
-            flag = False
-    elapsed = time.time() - t
-    if display:
-        print(N)
-        print(elapsed)
-    return solutions
-
-
-def findCellsWithUniqueOptions(G):
-    # This function computes a matrix with the cells that have not been filled
-    # yet, but have a single option available. Only those that already have a
-    # single option when the function starts, are considered.
-    #
-    # INPUT:
-    #  - G: A GeneralSudokuGrid object that has already been initialized.
-    #
-    # OUTPUT:
-    #  - T: Matrix containing entries that can be filled and zeros in all other
-    #       entries. It might be an all zeroes.
-    #
-
-    size    = G.getSize()
-    options = G.getOptions()
-    grid    = G.getGrid()
-
-    M = np.logical_and(np.sum(options,axis = 0) == 1, grid == 0)
-    M = np.where(M)
-    K = len(M[0])
-    T = np.zeros([size,size], dtype = np.uint8)
-
-    for k in range(K):
-        x = M[0][k]
-        y = M[1][k]
-        v = np.where(options[:,x,y])[0][0]
-        T[x,y] = v + 1
-    return T
-
-
-def findCellsUniqueOptionOnPartition(G):
-    # This function finds the cells that have not been filled and that, on one
-    # of the parts, is the only one that has that option available.
-    #
-    # INPUT:
-    #  - G: A GeneralSudokuGrid object that has already been initialized.
-    #
-    # OUTPUT:
-    #  - T: Matrix containing entries that can be filled and zeros in all other
-    #       entries. It might be an all zeroes.
-    #
-
-    size       = G.getSize()
-    partitions = G.getPartitions()
-    options    = G.getOptions()
-    grid       = G.getGrid()
-    partN      = G.getNumberOfPartitions()
-
-    T = np.zeros([size,size], dtype = np.uint8)
-
-    for k in range(partN):
-        for n in range(size):
-            P = np.where(partitions[k] == n + 1)
-            Q = np.sum(options[:,P[0],P[1]], axis = 1)
-            R = np.where(Q == 1)
-            S = len(R[0])
-            for s in range(S):
-                t = R[0][s]
-                u = np.where(options[:,P[0],P[1]][t])[0][0]
-                x = P[0][u]
-                y = P[1][u]
-                T[x,y] = t + 1
-    return T
-
-
 def latinSquarePartitions(N):
     # This function returns partitions corresponding to the regular Latin
     # Squares. This means, that the partitions are, first, the rows, and second,
@@ -491,104 +301,6 @@ class GeneralSudokuGrid:
     #############
     # FUNCTIONS #
     #############
-    def fillEntry(self, val, x, y):
-        # This function checks if the entry at the coordinates [x,y] have
-        # already been filled, and if they have not, and the value val is a
-        # valid option, then they filled, and marks the options respectively as
-        # marked, and returns True. If they have, then it just returns False.
-        #
-        # INPUT:
-        #  - val: The value that is going to be filled in.
-        #  - x:   The x coordinate of the entry to be filled.
-        #  - y:   The y coordinate of the entry to be filled.
-        #
-        # OUTPUT:
-        #  - FILLED: Returns True if the given entry was filled, False otherwise.
-        #
-        v = val - 1
-        if self._grid[x,y] == 0 and self._options[v,x,y]:
-            self._grid[x,y] = val
-            self._options[:,x,y] = False
-            partMates = np.zeros([self._size,self._size], dtype = np.bool)
-            K = self._partitions.shape[0]
-            for k in range(K):
-                partition = self._partitions[k,:,:]
-                N = partition[x,y]
-                partRegion = (partition == N)
-                partMates = np.logical_or(partMates, partRegion)
-            partMates = np.logical_and(partMates, (self._grid == 0))
-            idxs = np.where(partMates)
-            self._options[v,idxs[0],idxs[1]] = False
-            return True
-        else:
-            return False
-
-    def fillEntriesfromMatrix(self,T):
-        # This function takes a matrix with nonzero entries with values that
-        # must be filled on the grid in the position where they are located. It
-        # makes a check that the entries have not been already fill.
-        #
-        # INPUT:
-        #  - T: Matrix whose nonzero values on positions where they must be
-        #       filled
-        #
-        # OUTPUT:
-        #  - FILLED: Returns True if all entries were succesfully entered.
-        #
-        A = (self._grid != 0)
-        B = (T != 0)
-        C = np.logical_and(A,B)
-        flag = np.ndarray.any(C)
-        if flag:
-            return False
-        else:
-            flag = True
-            P = np.where(B)
-            N = len(P[0])
-            for n in range(N):
-                flag &= self.fillEntry(T[P[0][n],P[1][n]], P[0][n], P[1][n])
-            return flag
-
-    def deactivateOption(self,x,y,v):
-        # This method is used when an option must be set to no longer be
-        # considered viable.
-        #
-        # INPUT:
-        #  - x: First coordinate of the value to be turned off.
-        #  - y: Second coordinate of the value to be turned off.
-        #  - v: Value to be turned off (1 to N, not 0 to N-1)
-        #
-        v -= 1
-        self._options[v,x,t] = False
-
-
-
-    def isFilled(self):
-        # This function returns True if and only if all the cells in the grid
-        # have been filled.
-        #
-        # OUTPUT:
-        #  - FILLED: A boolean that is true only if all the cells in the grid
-        #            have been filled.
-        #
-        M = self._grid == 0
-        P = np.where(M)
-        return len(P[0]) == 0
-
-
-    def isViable(self):
-        # This function returns True if and only if all empty cells still have
-        # at least an option open. That is, if for every x and y valid, not yet
-        # filled, there is at least a value v such that _options[v,x,y] is set
-        # to True.
-        #
-        # OUTPUT:
-        #  - VIABLE: Boolean, true if and only if each unfilled cell has at
-        #            least one option open.
-        #
-        M = np.logical_and(np.sum(self._options, axis = 0) == 0, self._grid == 0)
-        M = np.where(M)
-        return len(M[0]) == 0
 
 
 ###############

@@ -1,3 +1,4 @@
 /src/m/octave-workspace
+/src/py/__pycache__
 script.*
 *.pyc
