@@ -38,7 +38,7 @@
 # least one row (usually the first one) in order. You have to deduce the entire
 # matrix based only on "hints" that tell you if two numbers in two specific rows
 # are or are not in the same column. Any matrix obtained by permuting the
-# columns should be acceptable. 
+# columns should be acceptable.
 #
 # Copyright (c) 2020 David Jimenez.
 # All rights reserved.
@@ -64,3 +64,27 @@
 # OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+###################
+###################
+###################
+###             ###
+###             ###
+###   CLASSES   ###
+###             ###
+###             ###
+###################
+###################
+###################
+
+
+##################
+##################
+##              ##
+##  CLASS HINT  ##
+##              ##
+##################
+##################
+class EinsteinHint:
+    pass
