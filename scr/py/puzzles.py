@@ -34,6 +34,8 @@
 ###########
 import numpy as np
 import random
+import time
+import statistics
 
 
 ###################
@@ -82,21 +84,45 @@ def randomLatinSquare(n):
     remaining = [[ k+1 for k in range(n)] for i in range(n)]
     latinSquare = np.zeros((n,n),dtype = int)
     k = 0
-    while k < n && k > -1:
+    while k < n:
         j = 0
         row = []
         tried = [[] for i in range(n)]
-        while j < n:
-            pick = [x from x in R[j] if x not in row]
+        while j < n and j > -1:
+            pick = [x for x in remaining[j] if x not in row]
             if len(pick) > 0:
                 x = random.choice(pick)
                 tried[j].append(x)
                 row.append(x)
-                R[j].remove(x)
-    return remaining
+                remaining[j].remove(x)
+                j += 1
+            else:
+                remaining[j] += tried[j]
+                tried[j] = []
+                if j > 0:
+                    row.pop()
+                j-=1
+        if len(row) == n:
+            latinSquare[k,:] = row
+            k += 1
+        else:
+            # This is the case of failure, tnat I am unsure if will be reached.
+            remaining = [[ k+1 for k in range(n)] for i in range(n)]
+            latinSquare = np.zeros((n,n),dtype = int)
+            k = 0
+            # print('Failure')
+    return latinSquare
 
 
-
+def test(n):
+    # This is just a test function
+    repetitions = 100
+    time_array = []
+    for repetition in range(repetitions):
+        T = time.time()
+        A = randomLatinSquare(n)
+        time_array.append(time.time()-T)
+    print(statistics.mean(time_array))
 
 
 
