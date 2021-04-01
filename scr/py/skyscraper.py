@@ -68,6 +68,10 @@
 ###########
 # IMPORTS #
 ###########
+import copy
+
+import numpy as np
+
 from math import sqrt
 
 ####################
@@ -157,6 +161,121 @@ def generateLURD(board):
 ###################
 
 
+##############################
+##############################
+##                          ##
+##  CLASS SKYSCRAPERPUZZLE  ##
+##                          ##
+##############################
+##############################
+class SkyScraperPuzzle:
+    # This class contains the clues, board and other attributes, as well as the
+    # logic necessary to solve puzzles of the SkyScraper type, as well as the
+    # logic to generate clues to solve one.
+    #
+    # NOTE:
+    #  - Could consider both to solve and to generate puzzles with clues given
+    #    for those cases when the clues (LURD) have more than one solution.
+    #
+
+    ##############
+    # ATTRIBUTES #
+    ##############
+    _size    = 0
+    _lurd    = []
+    _board   = []
+    _options = []
+
+
+    ############
+    # CREATORS #
+    ############
+    def __init__(self,lurd, board = np.zeros((1,2),dtype = int)):
+        # This is the creator of the class. It takes one mandatory argument,
+        # LURD (Left, Up, Right, Down) that contains the clues, and an optional
+        # board, that should contain the actual board of the solution, maybe
+        # blank, maybe full, or something in between.
+        #
+        # INPUT:
+        #  - lurd: This is an Nx4 NumPy integer array, where N is the size of
+        #          the puzzle, and such array contains, row by row, the clues
+        #          corresponding to the left side, upper side, right side and
+        #          lower side. The name comes from Left, Up, Right, and Down.
+        #
+        #  - board: This is an OPTIONAL input. It should contain an NxN NumPy
+        #           array, with N the size of the puzzle. This array should
+        #           contain either a valid solution for lurd, a zero matrix, or
+        #           a partially filled board of a valid solution, with zeros in
+        #           the unfilled position.
+        #
+        # NOTE:
+        #  - Consider adding a verification step for the board.
+        #
+        N = lurd.shape[1]
+        self._size = N
+        self._lurd  = lurd
+        self._options = np.ones((N,N,N), dtype = int)
+        if board.shape[0] == board.shape[1] == N:
+            self._board = board
+            # There should be a better initialization of the of the option array
+        else:
+            self._board = np.zeros((N,N), dtype = int)
+
+
+    ###########
+    # GETTERS #
+    ###########
+    def getSize(self):
+        # Returns the size of the puzzle.
+        return self._size
+
+    def getClues(self):
+        # Return the array with the clues.
+        return self._lurd
+
+    def getBoard(self):
+        # Returns the board in the current state.
+        return self._board
+
+    def getOptions(self):
+        # Returns the 3D array with all the options given.
+        return self._options
+
+
+    ###########
+    # SETTERS #
+    ###########
+    def setSize(self,size):
+        # Sets the size given as the size of the puzzle.
+        # Should consider if it is necessary to have a way to modify the size/
+        self._size = size
+
+    def setClues(self,lurd):
+        # Sets the clues (lurd) to the array
+        # Is it necessary to have a way to modify lurd?
+        self._lurd = lurd
+
+    def setBoard(self,board):
+        # Sets the board.
+        # Should consideer adding some verification steps
+        self._board = board
+
+    def setOptions(self,options):
+        # Sets the option 3D array.
+        # Should consideer adding some verification steps
+        self._options = options
+
+
+    ###########
+    # METHODS #
+    ###########
+    def fullBoard(self):
+        # This method returns true if and only if the board does not contain any
+        # unfilled (zero) cell. 
+        return np.where(self._board == 0)[0].size == 0
+
+
+
 #######################
 #######################
 ##                   ##
@@ -164,7 +283,7 @@ def generateLURD(board):
 ##                   ##
 #######################
 #######################
-class SomeClass:
+# class SomeClass:
     # Description.
 
     ##############
