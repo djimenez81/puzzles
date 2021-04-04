@@ -77,7 +77,7 @@ from math import sqrt
 ####################
 # GLOBAL VARIABLES #
 ####################
-
+BACKTRACKING = "BACKTRACKING"
 # Exampls of finished boards
 # board1 = np.array([[4,5,1,3,2],[5,4,3,2,1],[1,3,2,4,5],[2,1,4,5,3],[3,2,5,1,4]],dtype=int)
 # board2 = np.array([[1,2,4,3,5],[2,3,5,4,1],[4,1,3,5,2],[5,4,2,1,3],[3,5,1,2,4]],dtype=int)
@@ -271,8 +271,81 @@ class SkyScraperPuzzle:
     ###########
     def fullBoard(self):
         # This method returns true if and only if the board does not contain any
-        # unfilled (zero) cell. 
+        # unfilled (zero) cell.
         return np.where(self._board == 0)[0].size == 0
+
+    def solve(self, strategy = BACKTRACKING):
+        # This method invokes the different method of solution for the puzzle.
+        # It accepts one optional input.
+        #
+        # INPUT:
+        #  - strategy: A string that specifies the solution strategy to follow.
+        #
+        if strategy == BACKTRACKING:
+            self.backtrackingSolve()
+
+    def backtrackingSolve(self):
+        pass
+
+    def stillViable(self):
+        # This method checks if the current state of the board is viable. It is
+        # mainly thought for a backgtracking approach, where the advance is done
+        # first from left to right, and then from top to bottom.
+        #
+        if self.fullBoard():
+            currentLurd = generateLURD(self._board)
+            return np.array_equal(currentLurd, self._lurd)
+        else:
+            flag = True
+            for k in range(self._size):
+                if (np.where(self._board[k,:] > 0)[0].size > 0 and
+                    np.where(self._board[k,:] == 0)[0].size == 0):
+                    count_L = count_R = 0
+                    max_L   = max_R   = 0
+                    for j in range(self._size):
+                        if self._board[k,j] > max_L:
+                            max_L = self._board[k,j]
+                            count_L += 1
+                        if self._board[k,self._size-1-j] > max_R:
+                            max_R = self._board[k,self._size-1-j]
+                            count_R += 1
+                    if count_L != self._lurd[0,k] or count_R != self._lurd[2,k]:
+                        flag = False
+                elif np.where(self._board[k,:] > 0)[0].size > 0:
+                    count = 0
+                    max   = 0
+                    for j in range(self._size):
+                        if self._board[k,j] > max:
+                            max = self._board[k,j]
+                            count += 1
+                    if count > self._lurd[0,k]:
+                        flag = False
+                if (np.where(self._board[:,k] > 0)[0].size > 0 and
+                    np.where(self._board[:,k] == 0)[0].size == 0):
+                    count_U = count_D = 0
+                    max_U   = max_D   = 0
+                    for j in range(self._size):
+                        if self._board[j,k] > max_U:
+                            max_U = self._board[j,k]
+                            count_U += 1
+                        if self._board[self._size-1-j,K] > max_D:
+                            max_D = self._board[self._size-1-j,K]
+                            count_D += 1
+                    if count_U != self._lurd[1,k] or count_D != self._lurd[3,k]:
+                        flag = False
+                elif np.where(self._board[:,K] > 0)[0].size > 0:
+                    count = 0
+                    max   = 0
+                    for j in range(self._size):
+                        if self._board[j,k] > max:
+                            max = self._board[j,k]
+                            count += 1
+                    if count > self._lurd[0,k]:
+                        flag = False
+            return flag
+
+
+
 
 
 
@@ -308,7 +381,7 @@ class SkyScraperPuzzle:
     ###########
     # METHODS #
     ###########
-    pass
+    # pass
 
 
 
